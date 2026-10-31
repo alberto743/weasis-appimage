@@ -1,0 +1,4 @@
+dist/
+deb/
+squashfs-root/
+pr-body.md

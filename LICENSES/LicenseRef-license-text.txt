@@ -1,0 +1,2 @@
+Texts of third-party licenses reproduced unchanged, for notice purposes only. Each text is governed
+by the terms of the project that publishes it; this repository claims no rights in them.

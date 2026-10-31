@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 Alberto P
+# SPDX-License-Identifier: MPL-2.0
+
+# Actions are pinned by commit SHA with a trailing "# vX.Y.Z" comment; Dependabot bumps both.
+# The downloaded build tools are pinned in tools.env and are not covered by Dependabot.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"

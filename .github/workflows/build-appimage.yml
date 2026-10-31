@@ -1,0 +1,231 @@
+# SPDX-FileCopyrightText: 2026 Alberto P
+# SPDX-License-Identifier: MPL-2.0
+
+name: Build AppImage
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Upstream stable tag to build (vX.Y.Z); empty = newest stable"
+        required: false
+        type: string
+      force:
+        description: "Rebuild and overwrite the assets if the release already exists"
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: appimage-release
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: nroduit/Weasis
+
+jobs:
+  check:
+    name: Check upstream
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    outputs:
+      build: ${{ steps.resolve.outputs.build }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      latest: ${{ steps.resolve.outputs.latest }}
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # Two failed runs in a row block scheduled runs until a manual run succeeds
+      - name: Gate on previous failures
+        if: github.event_name == 'schedule'
+        run: |
+          prev=$(gh run list --workflow build-appimage.yml --status completed --limit 2 \
+                   --json conclusion --jq '[.[].conclusion] | join(",")')
+          if [ "$prev" = "failure,failure" ]; then
+            open=$(gh issue list --state open --search 'in:title "AppImage builds blocked"' \
+                     --json number --jq length)
+            if [ "$open" = "0" ]; then
+              gh issue create --title "AppImage builds blocked after 2 consecutive failures" \
+                --body "Fix the cause, then run the workflow manually. A successful manual run reopens the gate."
+            fi
+            echo "::error::Gate closed: the last two runs failed"
+            exit 1
+          fi
+
+      - name: Resolve tag
+        id: resolve
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          # Stable only: drafts and pre-releases are filtered by gh, the strict regex is a second guard
+          newest=$(gh release list --repo "$UPSTREAM" --exclude-pre-releases --exclude-drafts --limit 100 \
+                     --json tagName --jq '.[].tagName' \
+                   | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          tag="${INPUT_TAG:-$newest}"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::'$tag' is not a stable vX.Y.Z tag"; exit 1; }
+          gh release view "$tag" --repo "$UPSTREAM" --json isPrerelease,isDraft \
+            --jq 'select(.isPrerelease or .isDraft) | error("upstream release is a pre-release or draft")'
+
+          build=true
+          if gh release view "$tag" >/dev/null 2>&1 && [ "$FORCE" != "true" ]; then
+            build=false
+          fi
+          latest=false
+          [ "$tag" = "$newest" ] && latest=true
+
+          # Only build the architectures for which upstream published a .deb (older tags may lack arm64)
+          names=$(gh release view "$tag" --repo "$UPSTREAM" --json assets --jq '[.assets[].name]')
+          matrix=$(jq -nc --argjson names "$names" --arg ver "${tag#v}" '
+            ($ver | gsub("\\."; "\\.")) as $v
+            | { include: [
+                { runner: "ubuntu-24.04", deb_arch: "amd64", appimage_arch: "x86_64" },
+                { runner: "ubuntu-24.04-arm", deb_arch: "arm64", appimage_arch: "aarch64" }
+              ] | map(select(. as $a | any($names[]; test("^weasis_" + $v + "-.*_" + $a.deb_arch + "\\.deb$")))) }
+            ')
+          if [ "$(jq '.include | length' <<< "$matrix")" = "0" ]; then
+            echo "::error::no .deb found in upstream release $tag"
+            exit 1
+          fi
+          {
+            echo "build=$build"
+            echo "tag=$tag"
+            echo "latest=$latest"
+            echo "matrix=$matrix"
+          } >> "$GITHUB_OUTPUT"
+          echo "tag=$tag build=$build latest=$latest matrix=$matrix" >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build ${{ matrix.appimage_arch }}
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.check.outputs.matrix) }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.check.outputs.tag }}
+      DEB_ARCH: ${{ matrix.deb_arch }}
+      ARCH: ${{ matrix.appimage_arch }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zsync xz-utils unzip
+
+      - name: Download and verify the upstream .deb
+        run: |
+          ver="${TAG#v}"
+          gh release download "$TAG" --repo "$UPSTREAM" --dir deb \
+            --pattern "weasis_${ver}-*_${DEB_ARCH}.deb"
+          deb=$(find deb -maxdepth 1 -name '*.deb')
+          if [ -z "$deb" ] || [ "$(echo "$deb" | wc -l)" != "1" ]; then
+            echo "::error::expected exactly one .deb"
+            exit 1
+          fi
+          # GitHub records a digest for each release asset; upstream publishes no checksum files.
+          # Assets uploaded before GitHub recorded digests have none, so such old tags cannot be built.
+          expected=$(gh api "repos/$UPSTREAM/releases/tags/$TAG" \
+                       --jq ".assets[] | select(.name == \"$(basename "$deb")\") | .digest // empty")
+          if [ -z "$expected" ]; then
+            echo "::error::no digest recorded for $(basename "$deb"); cannot verify this release"
+            exit 1
+          fi
+          actual="sha256:$(sha256sum "$deb" | cut -d' ' -f1)"
+          [ "$expected" = "$actual" ] || { echo "::error::digest mismatch: $expected != $actual"; exit 1; }
+          echo "DEB=$deb" >> "$GITHUB_ENV"
+
+      - name: Fetch build tools
+        run: scripts/fetch-tools.sh "$ARCH" "$RUNNER_TEMP/tools"
+
+      - name: Build AppImage
+        run: |
+          scripts/package-appimage.sh --deb "$DEB" --arch "$ARCH" --out dist --tools "$RUNNER_TEMP/tools" \
+            --update-info "gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}|latest|Weasis-*-${ARCH}.AppImage.zsync"
+
+      - name: Smoke test
+        run: |
+          cd dist
+          appimage=$(ls Weasis-*-"$ARCH".AppImage)
+          chmod +x "$appimage"
+          "./$appimage" --appimage-extract >/dev/null
+          test -x squashfs-root/usr/bin/Weasis
+          grep -q 'x-scheme-handler/weasis' squashfs-root/*.desktop
+          rm -rf squashfs-root
+
+      - name: Add checksums
+        run: |
+          cd dist
+          for f in *.AppImage *.licenses.tar.gz; do
+            sha256sum "$f" > "$f.sha256"
+          done
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-path: dist/*.AppImage
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: appimage-${{ matrix.appimage_arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: [check, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ needs.check.outputs.tag }}
+      LATEST: ${{ needs.check.outputs.latest }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          pattern: appimage-*
+          path: dist
+          merge-multiple: true
+
+      - name: Create or update release
+        run: |
+          ver="${TAG#v}"
+          cat > notes.md <<EOF
+          Unofficial AppImage repackaging of [Weasis ${ver}](https://github.com/${UPSTREAM}/releases/tag/${TAG}).
+          Not affiliated with or endorsed by the Weasis project. Weasis is not a certified medical device.
+          Built from the upstream \`.deb\` without modification. See the README for verification.
+          Licenses and third-party notices: \`THIRD-PARTY-NOTICES.md\` in this repository and the
+          \`.licenses.tar.gz\` asset. This software is based in part on the work of the Independent JPEG Group.
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --title "Weasis ${ver} AppImage (unofficial)" \
+              --notes-file notes.md --latest="$LATEST" --target "$GITHUB_SHA"
+          fi

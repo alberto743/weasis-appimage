@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 Alberto P
+# SPDX-License-Identifier: MPL-2.0
+
+name: Update build tools
+
+on:
+  schedule:
+    - cron: "43 4 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: deps/update-tools
+    steps:
+      # Credentials stay persisted: this job pushes a branch. Pull requests opened with GITHUB_TOKEN do
+      # not trigger lint.yml; use a PAT or app token if checks on these pull requests are wanted.
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Bump pinned tools
+        id: bump
+        run: |
+          summary=$(scripts/update-tools.sh)
+          {
+            echo "summary<<EOF"
+            echo "$summary"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the pull request
+        if: ${{ steps.bump.outputs.summary != '' }}
+        env:
+          SUMMARY: ${{ steps.bump.outputs.summary }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git commit -am "Update pinned build tools"
+          git push --force origin "$BRANCH"
+          {
+            echo "Bumps the versions and SHA-256 pinned in \`tools.env\`."
+            echo
+            echo "$SUMMARY"
+            echo
+            echo "Review the upstream release notes before merging. The hashes come from the digest GitHub"
+            echo "records for each release asset, or from the downloaded file when no digest exists."
+          } > pr-body.md
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
+              --title "Update pinned build tools" \
+              --body-file pr-body.md
+          fi
