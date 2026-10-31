@@ -1,0 +1,6 @@
+Component: libjxl
+Bundled version: 0.11.2
+License: BSD-3-Clause
+Files:
+  LICENSE: copied unchanged from libjxl/libjxl at v0.11.2, path LICENSE
+Retrieved: 2026-11-01

@@ -1,0 +1,6 @@
+Component: OSHI
+Bundled version: 7.6.0
+License: MIT
+Files:
+  LICENSE: copied unchanged from oshi/oshi at oshi-parent-7.6.0, path LICENSE
+Retrieved: 2026-11-01

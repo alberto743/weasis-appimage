@@ -1,0 +1,6 @@
+Component: XZ for Java
+Bundled version: 1.12
+License: 0BSD / public domain
+Files:
+  COPYING: copied unchanged from tukaani-project/xz-java at v1.12, path COPYING
+Retrieved: 2026-11-01

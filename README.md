@@ -35,7 +35,7 @@ Each release has, per architecture (`x86_64`, `aarch64`):
 
 ```bash
 sha256sum -c Weasis-<version>-<arch>.AppImage.sha256
-gh attestation verify Weasis-<version>-<arch>.AppImage --repo <owner>/<this-repo>
+gh attestation verify Weasis-<version>-<arch>.AppImage --repo alberto743/weasis-appimage
 ```
 
 The workflow also checks the upstream `.deb` against the digest GitHub records for the release
@@ -99,8 +99,8 @@ its source, and every release ships it with the license files from the upstream 
 - Weasis: EPL-2.0 OR Apache-2.0 ([upstream](https://github.com/nroduit/Weasis)). Source is available
   at the upstream release tag.
 - The bundled Java runtime (Eclipse Temurin) is GPL-2.0 with the Classpath Exception.
-- LGPL components (Docking Frames, Java ISO Tools) can be replaced: unpack the AppImage with
-  `--appimage-extract`.
+- LGPL components (Docking Frames, Java ISO Tools, VectorGraphics2D) can be replaced: unpack the
+  AppImage with `--appimage-extract`.
 - The image codecs in the OpenCV library include code from the Independent JPEG Group: this
   software is based in part on the work of the Independent JPEG Group.
 - The AppImage runtime ([type2-runtime](https://github.com/AppImage/type2-runtime)) is embedded in

@@ -1,0 +1,6 @@
+Component: JOGL
+Bundled version: 2.6.0
+License: BSD-2-Clause and others (see file)
+Files:
+  LICENSE.txt: copied unchanged from jogamp/jogl at v2.6.0, path LICENSE.txt
+Retrieved: 2026-11-01

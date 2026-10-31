@@ -1,0 +1,6 @@
+Component: JOML
+Bundled version: 1.10.9
+License: MIT
+Files:
+  LICENSE: copied unchanged from JOML-CI/JOML at 1.10.9, path LICENSE
+Retrieved: 2026-11-01

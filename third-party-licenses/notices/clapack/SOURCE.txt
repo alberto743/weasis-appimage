@@ -1,0 +1,7 @@
+Component: CLAPACK (OpenCV 3rdparty copy)
+Bundled version: as in OpenCV 5.0.0
+License: BSD-3-Clause (modified BSD, per file)
+Files:
+  LICENSE: copied unchanged from opencv/opencv at 5.0.0, path 3rdparty/clapack/lapack_LICENSE
+Note: File 3rdparty/clapack/lapack_LICENSE of OpenCV 5.0.0.
+Retrieved: 2026-11-01

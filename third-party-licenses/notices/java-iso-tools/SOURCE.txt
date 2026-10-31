@@ -1,0 +1,8 @@
+Component: Java ISO Tools (iso9660-writer, sabre)
+Bundled version: 2.1.0
+License: LGPL-2.1-or-later
+Files:
+  LICENSE: copied unchanged from stephenc/java-iso-tools at java-iso-tools-parent-2.1.0, path LICENSE
+  HEADER-iso9660-writer.java.txt: license comment block (first /* */ comment) of stephenc/java-iso-tools at java-iso-tools-parent-2.1.0, path iso9660-writer/src/main/java/com/github/stephenc/javaisotools/iso9660/ISO9660RootDirectory.java
+  HEADER-sabre.java.txt: license comment block (first /* */ comment) of stephenc/java-iso-tools at java-iso-tools-parent-2.1.0, path sabre/src/main/java/com/github/stephenc/javaisotools/sabre/HandlerException.java
+Retrieved: 2026-11-01

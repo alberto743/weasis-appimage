@@ -1,0 +1,6 @@
+Component: OpenJPEG
+Bundled version: 2.5.4
+License: BSD-2-Clause
+Files:
+  LICENSE: copied unchanged from uclouvain/openjpeg at v2.5.4, path LICENSE
+Retrieved: 2026-11-01

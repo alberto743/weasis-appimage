@@ -1,0 +1,7 @@
+Component: CharLS
+Bundled version: 3.0.0
+License: BSD-3-Clause
+Files:
+  LICENSE.md: copied unchanged from team-charls/charls at default-branch, path LICENSE.md
+Note: Copied from the default branch: the upstream repository has no 3.0.0 tag. Compare with the bundled source when confirming.
+Retrieved: 2026-11-01

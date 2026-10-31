@@ -1,0 +1,8 @@
+Component: Docking Frames
+Bundled version: 1.1.7 (Weasis build org.weasis.thirdparty:docking-frames)
+License: LGPL-2.1-or-later
+Files:
+  readme.txt: copied unchanged from Benoker/DockingFrames at default-branch, path readme.txt
+  HEADER-Dockable.java.txt: license comment block (first /* */ comment) of Benoker/DockingFrames at master, path docking-frames-core/src/bibliothek/gui/Dockable.java
+Note: Copied from the default branch of the original project: the repository has no 1.1.7 tag. The library has no standalone LICENSE file; the LGPL-2.1 text is in third-party-licenses/LGPL-2.1-only.txt.
+Retrieved: 2026-11-01

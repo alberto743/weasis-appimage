@@ -1,0 +1,8 @@
+Component: VectorGraphics2D
+Bundled version: 0.13
+License: LGPL-3.0-or-later (alternatively GPL-3.0-or-later)
+Files:
+  LICENSE.LGPL: copied unchanged from eseifert/VectorGraphics2D at 0.13, path LICENSE.LGPL
+  HEADER-Document.java.txt: license comment block (first /* */ comment) of eseifert/VectorGraphics2D at 0.13, path src/main/java/de/erichseifert/vectorgraphics2d/Document.java
+Note: At tag 0.13 the license files are LICENSE.GPL and LICENSE.LGPL and the source headers say LGPL v3 or later.
+Retrieved: 2026-11-01

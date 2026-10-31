@@ -1,0 +1,7 @@
+Component: Apache Felix Framework
+Bundled version: 7.0.5
+License: Apache-2.0
+Files:
+  LICENSE: copied unchanged from apache/felix-dev at org.apache.felix.framework-7.0.5, path LICENSE
+Note: The repository root LICENSE of the release tag; no NOTICE file was found at that tag.
+Retrieved: 2026-11-01

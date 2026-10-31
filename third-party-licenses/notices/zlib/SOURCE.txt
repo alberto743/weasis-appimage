@@ -1,0 +1,6 @@
+Component: zlib
+Bundled version: 1.3.2
+License: Zlib
+Files:
+  LICENSE: copied unchanged from madler/zlib at v1.3.2, path LICENSE
+Retrieved: 2026-11-01

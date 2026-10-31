@@ -1,0 +1,8 @@
+Component: dcm4che (via weasis-dicom-tools)
+Bundled version: 5.35.2
+License: MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later
+Files:
+  LICENSE.txt: copied unchanged from dcm4che/dcm4che at 5.35.2, path LICENSE.txt
+  HEADER-Attributes.java.txt: license comment block (first /* */ comment) of dcm4che/dcm4che at 5.35.2, path dcm4che-core/src/main/java/org/dcm4che3/data/Attributes.java
+Note: The header excerpt shows the license block and contributors of a representative source file; per-file headers name other copyright holders.
+Retrieved: 2026-11-01

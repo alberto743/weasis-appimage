@@ -10,7 +10,7 @@ SPDX-FileCopyrightText = "2026 Alberto P"
 SPDX-License-Identifier = "MPL-2.0"
 
 [[annotations]]
-path = "third-party-licenses/*.txt"
+path = ["third-party-licenses/*.txt", "third-party-licenses/notices/**"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "The respective license authors"
+SPDX-FileCopyrightText = "The respective copyright holders and license authors"
 SPDX-License-Identifier = "LicenseRef-license-text"

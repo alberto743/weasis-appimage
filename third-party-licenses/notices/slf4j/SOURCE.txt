@@ -1,0 +1,6 @@
+Component: SLF4J
+Bundled version: 2.0.18
+License: MIT
+Files:
+  LICENSE.txt: copied unchanged from qos-ch/slf4j at v_2.0.18, path LICENSE.txt
+Retrieved: 2026-11-01

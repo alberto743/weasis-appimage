@@ -1,0 +1,8 @@
+Component: libjpeg-turbo
+Bundled version: 3.1.2 (build 3.1.2-70)
+License: BSD-3-Clause, IJG, Zlib
+Files:
+  LICENSE.md: copied unchanged from libjpeg-turbo/libjpeg-turbo at 3.1.2, path LICENSE.md
+  README.ijg: copied unchanged from libjpeg-turbo/libjpeg-turbo at 3.1.2, path README.ijg
+Note: README.ijg is the IJG license text, which also covers the IJG libjpeg 6b code listed in the OpenCV build information.
+Retrieved: 2026-11-01

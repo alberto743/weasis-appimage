@@ -1,0 +1,6 @@
+Component: libpng
+Bundled version: 1.6.57
+License: libpng-2.0
+Files:
+  LICENSE: copied unchanged from pnggroup/libpng at v1.6.57, path LICENSE
+Retrieved: 2026-11-01

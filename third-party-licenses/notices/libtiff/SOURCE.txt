@@ -1,0 +1,6 @@
+Component: libtiff
+Bundled version: 4.7.1
+License: libtiff
+Files:
+  LICENSE.md: copied unchanged from gitlab.com/libtiff/libtiff at v4.7.1, path LICENSE.md
+Retrieved: 2026-11-01

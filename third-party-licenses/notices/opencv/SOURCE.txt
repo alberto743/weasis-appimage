@@ -1,0 +1,6 @@
+Component: OpenCV
+Bundled version: 5.0.0
+License: Apache-2.0
+Files:
+  LICENSE: copied unchanged from opencv/opencv at 5.0.0, path LICENSE
+Retrieved: 2026-11-01

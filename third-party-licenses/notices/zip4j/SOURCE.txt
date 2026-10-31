@@ -1,0 +1,6 @@
+Component: zip4j
+Bundled version: 2.11.6
+License: Apache-2.0
+Files:
+  LICENSE: copied unchanged from srikanth-lingala/zip4j at v2.11.6, path LICENSE
+Retrieved: 2026-11-01

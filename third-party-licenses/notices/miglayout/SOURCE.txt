@@ -1,0 +1,7 @@
+Component: MiGLayout
+Bundled version: 11.4.3
+License: BSD-3-Clause
+Files:
+  HEADER-LC.java.txt: license comment block (first /* */ comment) of mikaelgrev/miglayout at v11.4.2, path core/src/main/java/net/miginfocom/layout/LC.java
+Note: Header excerpt taken from tag v11.4.2, the nearest tag to 11.4.3; the repository has no LICENSE file.
+Retrieved: 2026-11-01

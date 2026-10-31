@@ -1,0 +1,6 @@
+Component: Logback
+Bundled version: 1.6.1
+License: EPL-1.0 OR LGPL-2.1-only
+Files:
+  LICENSE.txt: copied unchanged from qos-ch/logback at v_1.6.1, path LICENSE.txt
+Retrieved: 2026-11-01
