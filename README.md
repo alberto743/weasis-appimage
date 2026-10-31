@@ -7,8 +7,9 @@ Weasis bugs upstream and packaging problems here.
 A scheduled workflow checks daily for a new **stable** upstream release (never pre-releases or
 drafts), takes the upstream `.deb` for `amd64` and, when published, `arm64`, repackages it with
 [linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) without modifying the application tree,
-and publishes the result as a release in this repository. The `x86_64` build is tested; the
-`aarch64` build uses the same script on a native arm64 runner and has not been verified yet.
+and publishes the result as a release in this repository. Both architectures are built on native
+runners and checked in CI (the image unpacks and contains the launcher and the `weasis://` entry).
+Neither has been run on a real desktop by CI.
 
 > Weasis is not a certified medical device (CE or FDA). Any primary diagnostic use requires you to
 > ensure full compliance with the laws and regulations applicable in your jurisdiction.
@@ -37,6 +38,8 @@ Each release has, per architecture (`x86_64`, `aarch64`):
 sha256sum -c Weasis-<version>-<arch>.AppImage.sha256
 gh attestation verify Weasis-<version>-<arch>.AppImage --repo alberto743/weasis-appimage
 ```
+
+`gh attestation` needs GitHub CLI 2.49 or newer.
 
 The workflow also checks the upstream `.deb` against the digest GitHub records for the release
 asset. Upstream publishes no checksum files, so this protects the transfer only.
