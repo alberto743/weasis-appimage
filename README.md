@@ -8,21 +8,18 @@ A scheduled workflow checks daily for a new **stable** upstream release (never p
 drafts), takes the upstream `.deb` for `amd64` and, when published, `arm64`, repackages it with
 [linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) leaving the application tree unmodified (only the `.desktop` entry is adjusted),
 and publishes the result as a release in this repository. Both architectures are built on native
-runners and smoke-tested in CI (the image unpacks and contains the launcher and the `weasis://` entry; the app is not launched).
-Neither has been run on a real desktop by CI.
+runners. CI smoke-tests each image (it unpacks, the bundled Java runs, the launcher and `weasis://`
+entry are present) but never launches the app.
 
 > Weasis is not a certified medical device (CE or FDA). Any primary diagnostic use requires you to
 > ensure full compliance with the laws and regulations applicable in your jurisdiction.
 
 ## Why this exists
 
-An AppImage build was proposed upstream in
-[nroduit/Weasis#961](https://github.com/nroduit/Weasis/pull/961). The maintainer declined it, since
-the format does not register the `weasis://` handler, has no sandbox or update channel, and adds a
-fourth Linux format to support. Those are legitimate reasons for the official project not to ship
-it. This repository exists for users who still want a portable, install-free build, for example to
-test several versions side by side or to carry a viewer on removable media, and it keeps that
-packaging separate from the official project. The limits the maintainer raised are listed below.
+The upstream maintainer [declined an AppImage](https://github.com/nroduit/Weasis/pull/961): no
+`weasis://` registration, no sandbox or update channel, one more Linux format to support. This
+repository is for users who still want a portable, install-free build, kept apart from the official
+project. The limits are listed below.
 
 ## Download and verify
 
@@ -77,16 +74,18 @@ installed when it is run through appjail.
 
 ## Building
 
-Releases are built by `.github/workflows/build-appimage.yml`. To build an older stable version,
-run the workflow manually with the `tag` input (e.g. `v4.7.3`); use `revision` (e.g. `1`) to publish a
-packaging-only fix as `vX.Y.Z-r1` without touching the existing release, or `force` to overwrite it. Old tags can only be built if upstream's assets have a digest recorded by GitHub,
-since the `.deb` is verified against it. An architecture is built only if upstream published a
-`.deb` for it. Two consecutive failed runs block scheduled runs and open an issue; a run that
-does not end in two failures reopens the gate.
+Releases are built by `.github/workflows/build-appimage.yml`. Manual run inputs:
 
-Build tools are pinned by version and SHA-256 in `tools.env`. A weekly workflow opens a pull
-request when a newer tool release exists. GitHub Actions are pinned by commit SHA and updated by
-Dependabot.
+- `tag`: an older stable version (e.g. `v4.7.3`). It needs a digest recorded by GitHub for the
+  upstream `.deb`, which is verified against it.
+- `revision`: a packaging-only fix, published as `vX.Y.Z-rN` without touching the existing release.
+- `force`: overwrite an existing release.
+
+An architecture is built only if upstream published a `.deb` for it. Two consecutive failed runs
+block scheduled runs and open an issue; a run that does not end in two failures reopens the gate.
+
+Build tools are pinned by version and SHA-256 in `tools.env`; a weekly workflow opens a pull
+request for newer releases. GitHub Actions are pinned by commit SHA and updated by Dependabot.
 
 ## Licensing
 
@@ -117,17 +116,7 @@ name, icon and logo remain those of their owners. Apache-2.0 and EPL-2.0 grant n
 
 ## Concerns from rights holders and the Weasis project
 
-This repository is a good-faith repackaging that tries to follow every license and notice
-requirement of the software it redistributes. If you are the Weasis maintainer, a copyright or
-trademark holder of any bundled component, or a user, and something here is not acceptable to you,
-please tell us. That includes a license or notice that is missing or wrong, a use of a name, icon
-or logo you do not agree with, or a wish that this repository not exist.
-
-- Open an issue in this repository, or contact the repository owner through their GitHub profile.
-- Say what the problem is and what you would like changed. No legal wording is needed.
-- We will review it promptly and, when the concern is valid, correct it, change the naming or
-  withdraw the affected releases. Pausing the scheduled workflow is always possible while we
-  discuss it.
-
-This section states an intention to cooperate. It is not legal advice and it does not replace the
-licenses of the bundled software or any permission you may need to give.
+If you are the Weasis maintainer or a rights holder of a bundled component and something here is
+not acceptable (a missing or wrong notice, a name, icon or logo, or a wish that this repository not
+exist), open an issue or contact the owner through their GitHub profile. No legal wording is
+needed; valid concerns will be corrected, or the affected releases renamed or withdrawn.

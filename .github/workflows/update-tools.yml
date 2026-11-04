@@ -21,8 +21,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       BRANCH: deps/update-tools
     steps:
-      # Credentials stay persisted: this job pushes a branch. Pull requests opened with GITHUB_TOKEN do
-      # not trigger lint.yml; use a PAT or app token if checks on these pull requests are wanted.
+      # Credentials stay persisted: this job pushes a branch
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
@@ -36,8 +35,8 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # Pull requests opened with GITHUB_TOKEN trigger no checks, so verify the new pins here:
-      # every pinned download must match its SHA-256 (the runner is x86_64; downloads are not executed)
+      # Pull requests opened with GITHUB_TOKEN trigger no checks (lint.yml included), so verify the
+      # new pins here: every download must match its SHA-256 (only the x86_64 tool is executed)
       - name: Verify the new pins
         if: ${{ steps.bump.outputs.summary != '' }}
         run: |

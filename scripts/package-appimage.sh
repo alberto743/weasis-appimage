@@ -61,11 +61,8 @@ APP="$WORK/deb/opt/weasis"
 sed -e 's|^Exec=.*|Exec=Weasis %U|' -e 's|^Icon=.*|Icon=weasis|' \
   "$APP/lib/weasis-Weasis.desktop" > "$WORK/weasis.desktop"
 if ! grep -q '^MimeType=.*x-scheme-handler/weasis;' "$WORK/weasis.desktop"; then
-  if grep -q '^MimeType=' "$WORK/weasis.desktop"; then
-    sed -i '/^MimeType=/ s|;*$|;x-scheme-handler/weasis;|' "$WORK/weasis.desktop"
-  else
-    echo 'MimeType=x-scheme-handler/weasis;' >> "$WORK/weasis.desktop"
-  fi
+  sed -i '/^MimeType=/ s|;*$|;x-scheme-handler/weasis;|' "$WORK/weasis.desktop"
+  grep -q '^MimeType=' "$WORK/weasis.desktop" || echo 'MimeType=x-scheme-handler/weasis;' >> "$WORK/weasis.desktop"
 fi
 cp "$APP/lib/Weasis.png" "$WORK/weasis.png"
 if command -v desktop-file-validate >/dev/null; then
@@ -93,18 +90,16 @@ cp "$ROOT/THIRD-PARTY-NOTICES.md" "$APPDIR/usr/share/doc/weasis-appimage/"
 # The plugin writes the .zsync file to the current directory
 (cd "$OUT" && "$TOOLS/linuxdeploy-plugin-appimage-$ARCH.AppImage" --appdir "$APPDIR")
 
-# Notices shipped with the release: repo notices, vendored license texts, the license/notice files of
-# the .deb and of the (xz-compressed, possibly nested) bundled jars, and the Java runtime build
-unzip_entries() { # <jar> <dest> <pattern>...: unzip drops entries that would escape <dest>; exit 11 = no match
+# Notices tarball
+unzip_entries() { # <jar> <dest> <pattern>...: unzip drops entries that would escape <dest>
   local jar="$1" dest="$2" rc=0 log
   shift 2
   mkdir -p "$dest"
   log=$(unzip -q -o -C "$jar" "$@" -d "$dest" 2>&1) || rc=$?
-  # 0 = ok, 1 = warnings only, 11 = no match
-  if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ] && [ "$rc" -ne 11 ]; then
-    echo "$log" >&2
-    die "unzip failed ($rc) on $jar"
-  fi
+  case "$rc" in
+    0 | 1 | 11) ;; # ok, warnings only, no match
+    *) echo "$log" >&2; die "unzip failed ($rc) on $jar" ;;
+  esac
 }
 
 extract_licenses() { # <jar> <dest>
@@ -138,6 +133,9 @@ for xz in "$APP"/lib/app/bundle/*.jar.xz "$APP"/lib/app/bundle-i18n/*.jar.xz; do
   done
   rm -rf "$WORK/$name.jar" "$nested"
 done
+# The launcher jar embeds FlatLaf and its IntelliJ themes, each theme with its own license file
+unzip_entries "$APP/lib/app/weasis-launcher.jar" "$NOTICE_DIR/jars/weasis-launcher" \
+  'com/formdev/flatlaf/intellijthemes/themes/*LICENSE*'
 find "$NOTICE_DIR/jars" -type d -empty -delete
 NOTICES="$OUT/Weasis-$VERSION-$ARCH.licenses.tar.gz"
 tar -C "$NOTICE_DIR" -czf "$NOTICES" .

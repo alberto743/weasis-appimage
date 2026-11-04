@@ -1,0 +1,14 @@
+Component: type2-runtime (embedded in every AppImage)
+Bundled version: 20251108
+License: MIT; statically linked: musl (MIT), squashfuse (BSD-2-Clause), zstd (BSD-3-Clause),
+  zlib (Zlib), libfuse3 (LGPL-2.1-or-later, see COPYING.libfuse), mimalloc (MIT)
+Files:
+  LICENSE.type2-runtime: AppImage/type2-runtime at 20251108, path LICENSE
+  COPYRIGHT.musl: musl-libc.org, path COPYRIGHT (default branch; no tag matched)
+  LICENSE.squashfuse: vasi/squashfuse, path LICENSE (default branch)
+  LICENSE.zstd: facebook/zstd, path LICENSE (dev branch)
+  COPYING.libfuse: libfuse/libfuse, path LICENSE (default branch); LGPL text in third-party-licenses/
+  LICENSE.mimalloc: microsoft/mimalloc, path LICENSE (default branch)
+  The zlib license is in ../zlib/LICENSE.
+Component list: scripts/chroot/build.sh and src/runtime/Makefile of the runtime at 20251108.
+Retrieved: 2026-11-04

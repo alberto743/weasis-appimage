@@ -9,8 +9,3 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    groups:
-      actions:
-        patterns: ["*"]
-    commit-message:
-      prefix: "ci"

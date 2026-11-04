@@ -3,5 +3,4 @@ Bundled version: 3.7.2
 License: Apache-2.0
 Files:
   LICENSE: copied unchanged from JFormDesigner/FlatLaf at 3.7.2, path LICENSE
-Note: The flatlaf-intellij-themes artifact adds per-theme licenses; confirm against that artifact.
 Retrieved: 2026-11-01
