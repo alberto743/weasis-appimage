@@ -8,8 +8,8 @@ A scheduled workflow checks daily for a new **stable** upstream release (never p
 drafts), takes the upstream `.deb` for `amd64` and, when published, `arm64`, repackages it with
 [linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) leaving the application tree unmodified (only the `.desktop` entry is adjusted),
 and publishes the result as a release in this repository. Both architectures are built on native
-runners. CI smoke-tests each image (it unpacks, the bundled Java runs, the launcher and `weasis://`
-entry are present) but never launches the app.
+runners. CI smoke-tests each image (it unpacks, the launcher starts the bundled JVM, the `weasis://`
+entry is present) but never opens the UI.
 
 > Weasis is not a certified medical device (CE or FDA). Any primary diagnostic use requires you to
 > ensure full compliance with the laws and regulations applicable in your jurisdiction.

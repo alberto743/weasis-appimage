@@ -181,8 +181,9 @@ jobs:
           chmod +x "$appimage"
           "./$appimage" --appimage-extract >/dev/null
           test -x squashfs-root/usr/bin/Weasis
-          # Start the bundled Java runtime natively (the app itself needs a display)
-          squashfs-root/usr/lib/runtime/bin/java -version
+          # The launcher must start the bundled JVM (the UI itself needs a display, so it is cut off)
+          timeout 20 squashfs-root/usr/bin/Weasis > "$RUNNER_TEMP/launch.log" 2>&1 || true
+          grep -q 'Starting Weasis' "$RUNNER_TEMP/launch.log" || { cat "$RUNNER_TEMP/launch.log"; exit 1; }
           grep -q 'x-scheme-handler/weasis' squashfs-root/*.desktop
           rm -rf squashfs-root
 
