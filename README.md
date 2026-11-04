@@ -78,8 +78,8 @@ installed when it is run through appjail.
 ## Building
 
 Releases are built by `.github/workflows/build-appimage.yml`. To build an older stable version,
-run the workflow manually with the `tag` input (e.g. `v4.7.3`); use `force` to overwrite an
-existing release. Old tags can only be built if upstream's assets have a digest recorded by GitHub,
+run the workflow manually with the `tag` input (e.g. `v4.7.3`); use `revision` (e.g. `1`) to publish a
+packaging-only fix as `vX.Y.Z-r1` without touching the existing release, or `force` to overwrite it. Old tags can only be built if upstream's assets have a digest recorded by GitHub,
 since the `.deb` is verified against it. An architecture is built only if upstream published a
 `.deb` for it. Two consecutive failed runs block scheduled runs and open an issue; a run that
 does not end in two failures reopens the gate.
