@@ -11,6 +11,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="$ROOT/tools.env"
 ARCHES=(x86_64 aarch64)
+EMPTY_SHA256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 api() {
   curl -fsSL --retry 3 ${GH_TOKEN:+-H "Authorization: Bearer $GH_TOKEN"} "https://api.github.com/$1"
@@ -35,7 +36,7 @@ asset_sha256() { # <repo> <tag> <asset>: the digest GitHub records, else the has
 }
 
 bump() { # <prefix> <repo> <asset template with @ARCH@>
-  local prefix="$1" repo="$2" template="$3" tag arch asset
+  local prefix="$1" repo="$2" template="$3" tag arch asset sha
   # Newest non-draft release. Alpha pre-releases are accepted, but the rolling "continuous" tag is skipped:
   # its assets change in place, so a pinned SHA-256 would stop matching.
   tag=$(api "repos/$repo/releases?per_page=20" \
@@ -48,7 +49,13 @@ bump() { # <prefix> <repo> <asset template with @ARCH@>
 
   for arch in "${ARCHES[@]}"; do
     asset="${template//@ARCH@/$arch}"
-    set_var "${prefix}_SHA256_$arch" "$(asset_sha256 "$repo" "$tag" "$asset")"
+    # Assign first: a failure inside "$(...)" as a command argument would be swallowed
+    sha=$(asset_sha256 "$repo" "$tag" "$asset")
+    if ! [[ "$sha" =~ ^[0-9a-f]{64}$ ]] || [ "$sha" = "$EMPTY_SHA256" ]; then
+      echo "ERROR: no valid SHA-256 for $asset in $repo $tag" >&2
+      exit 1
+    fi
+    set_var "${prefix}_SHA256_$arch" "$sha"
   done
   echo "$repo: $(current "${prefix}_VERSION") -> $tag"
   set_var "${prefix}_VERSION" "$tag"

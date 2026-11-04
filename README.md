@@ -6,9 +6,9 @@ Weasis bugs upstream and packaging problems here.
 
 A scheduled workflow checks daily for a new **stable** upstream release (never pre-releases or
 drafts), takes the upstream `.deb` for `amd64` and, when published, `arm64`, repackages it with
-[linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) without modifying the application tree,
+[linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) leaving the application tree unmodified (only the `.desktop` entry is adjusted),
 and publishes the result as a release in this repository. Both architectures are built on native
-runners and checked in CI (the image unpacks and contains the launcher and the `weasis://` entry).
+runners and smoke-tested in CI (the image unpacks and contains the launcher and the `weasis://` entry; the app is not launched).
 Neither has been run on a real desktop by CI.
 
 > Weasis is not a certified medical device (CE or FDA). Any primary diagnostic use requires you to
@@ -81,8 +81,8 @@ Releases are built by `.github/workflows/build-appimage.yml`. To build an older 
 run the workflow manually with the `tag` input (e.g. `v4.7.3`); use `force` to overwrite an
 existing release. Old tags can only be built if upstream's assets have a digest recorded by GitHub,
 since the `.deb` is verified against it. An architecture is built only if upstream published a
-`.deb` for it. Two consecutive failed runs block scheduled runs and open an issue; a successful
-manual run reopens the gate.
+`.deb` for it. Two consecutive failed runs block scheduled runs and open an issue; a run that
+does not end in two failures reopens the gate.
 
 Build tools are pinned by version and SHA-256 in `tools.env`. A weekly workflow opens a pull
 request when a newer tool release exists. GitHub Actions are pinned by commit SHA and updated by

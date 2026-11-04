@@ -21,11 +21,16 @@ die() {
 UPDATE_INFO=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --deb) DEB="$2"; shift 2 ;;
-    --arch) ARCH="$2"; shift 2 ;;
-    --out) OUT="$2"; shift 2 ;;
-    --tools) TOOLS="$2"; shift 2 ;;
-    --update-info) UPDATE_INFO="$2"; shift 2 ;;
+    --deb | --arch | --out | --tools | --update-info)
+      [[ $# -ge 2 ]] || die "$1 requires a value"
+      case "$1" in
+        --deb) DEB="$2" ;;
+        --arch) ARCH="$2" ;;
+        --out) OUT="$2" ;;
+        --tools) TOOLS="$2" ;;
+        --update-info) UPDATE_INFO="$2" ;;
+      esac
+      shift 2 ;;
     *) die "Unknown option: $1" ;;
   esac
 done
@@ -37,6 +42,8 @@ case "$ARCH" in
 esac
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+[ -f "$DEB" ] || die "$DEB not found"
+[ -d "$TOOLS" ] || die "tools directory $TOOLS not found"
 TOOLS=$(cd "$TOOLS" && pwd)
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -49,6 +56,8 @@ APP="$WORK/deb/opt/weasis"
 
 # Relative Exec/Icon: the AppImage is relocatable, unlike the /opt/weasis paths of the deb.
 # The weasis:// handler is declared but only becomes active once an integration tool installs the entry.
+[ -f "$APP/lib/weasis-Weasis.desktop" ] || die "lib/weasis-Weasis.desktop not found in $DEB"
+[ -f "$APP/lib/Weasis.png" ] || die "lib/Weasis.png not found in $DEB"
 sed -e 's|^Exec=.*|Exec=Weasis %U|' -e 's|^Icon=.*|Icon=weasis|' \
   "$APP/lib/weasis-Weasis.desktop" > "$WORK/weasis.desktop"
 if ! grep -q '^MimeType=.*x-scheme-handler/weasis;' "$WORK/weasis.desktop"; then
@@ -59,6 +68,9 @@ if ! grep -q '^MimeType=.*x-scheme-handler/weasis;' "$WORK/weasis.desktop"; then
   fi
 fi
 cp "$APP/lib/Weasis.png" "$WORK/weasis.png"
+if command -v desktop-file-validate >/dev/null; then
+  desktop-file-validate "$WORK/weasis.desktop" || die "invalid desktop file"
+fi
 
 export APPIMAGE_EXTRACT_AND_RUN=1 ARCH
 export LDAI_RUNTIME_FILE="$TOOLS/runtime-$ARCH"
@@ -75,6 +87,9 @@ chmod +x "$APPDIR/usr/bin/Weasis"
 # Stage 2: the real jpackage tree replaces the placeholder, then the AppDir is packed
 cp -a "$APP/." "$APPDIR/usr/"
 ln -sfn usr/bin/Weasis "$APPDIR/AppRun"
+# Ship the notices inside the image too, so a copied AppImage still carries them
+mkdir -p "$APPDIR/usr/share/doc/weasis-appimage"
+cp "$ROOT/THIRD-PARTY-NOTICES.md" "$APPDIR/usr/share/doc/weasis-appimage/"
 # The plugin writes the .zsync file to the current directory
 (cd "$OUT" && "$TOOLS/linuxdeploy-plugin-appimage-$ARCH.AppImage" --appdir "$APPDIR")
 
@@ -84,8 +99,9 @@ unzip_entries() { # <jar> <dest> <pattern>...: unzip drops entries that would es
   local jar="$1" dest="$2" rc=0 log
   shift 2
   mkdir -p "$dest"
-  log=$(unzip -q -o "$jar" "$@" -d "$dest" 2>&1) || rc=$?
-  if [ "$rc" -ne 0 ] && [ "$rc" -ne 11 ]; then
+  log=$(unzip -q -o -C "$jar" "$@" -d "$dest" 2>&1) || rc=$?
+  # 0 = ok, 1 = warnings only, 11 = no match
+  if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ] && [ "$rc" -ne 11 ]; then
     echo "$log" >&2
     die "unzip failed ($rc) on $jar"
   fi
@@ -93,7 +109,7 @@ unzip_entries() { # <jar> <dest> <pattern>...: unzip drops entries that would es
 
 extract_licenses() { # <jar> <dest>
   unzip_entries "$1" "$2" 'META-INF/LICENSE*' 'META-INF/NOTICE*' 'META-INF/COPYING*' \
-    'META-INF/DEPENDENCIES*' 'LICENSE*' 'NOTICE*' 'COPYING*'
+    'META-INF/DEPENDENCIES*' 'META-INF/license/*' 'LICENSE*' 'NOTICE*' 'COPYING*'
 }
 
 extract_nested_jars() { # <jar> <dest>: inner jars under lib/ (OSGi Bundle-ClassPath)
